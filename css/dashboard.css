@@ -1,0 +1,216 @@
+/* Dashboard Styles */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-grid .span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid .span-2 {
+    grid-column: span 1;
+  }
+}
+
+/* Streak Card */
+.streak-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.streak-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.streak-item {
+  text-align: center;
+}
+
+.streak-value {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+
+.streak-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.streak-divider {
+  width: 1px;
+  height: 48px;
+  background: var(--border);
+}
+
+.streak-fire {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 2rem;
+  opacity: 0.6;
+  animation: flicker 2s ease-in-out infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 0.9; }
+}
+
+/* Exam Widget */
+.exam-widget .exam-countdown {
+  text-align: center;
+}
+
+.exam-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.exam-date {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.exam-timer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.exam-timer-unit {
+  text-align: center;
+  padding: 12px 8px;
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: var(--radius-sm);
+}
+
+.exam-timer-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.exam-timer-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Goal Card */
+.goal-card .goal-text {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Quote Card */
+.quote-card blockquote {
+  border-left: 3px solid var(--primary);
+  padding-left: 16px;
+  margin-bottom: 12px;
+}
+
+.quote-card blockquote p {
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.quote-card cite {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-style: normal;
+}
+
+/* Subject Bars */
+.subject-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subject-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.subject-bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.subject-bar-name {
+  font-weight: 600;
+}
+
+.subject-bar-hours {
+  color: var(--text-secondary);
+}
+
+.subject-bar-track {
+  height: 8px;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.subject-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+.subject-bar-fill.medicine { background: linear-gradient(90deg, #6366f1, #818cf8); }
+.subject-bar-fill.surgery { background: linear-gradient(90deg, #ef4444, #f87171); }
+.subject-bar-fill.obgyn { background: linear-gradient(90deg, #ec4899, #f472b6); }
+
+/* Recent Sessions */
+.recent-sessions .session-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.recent-sessions .session-row:last-child {
+  border-bottom: none;
+}
+
+.session-row-subject {
+  font-weight: 600;
+}
+
+.session-row-meta {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.session-row-duration {
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+}

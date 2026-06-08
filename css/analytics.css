@@ -1,0 +1,348 @@
+/* Analytics Styles */
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.insight-item {
+  text-align: center;
+  padding: 8px;
+}
+
+.insight-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.insight-value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.charts-grid .span-2 {
+  grid-column: span 2;
+}
+
+.chart-card {
+  min-height: 280px;
+}
+
+.chart-card h3 {
+  text-transform: none;
+  font-size: 0.95rem;
+  color: var(--text);
+  letter-spacing: 0;
+  margin-bottom: 12px;
+}
+
+.chart-card canvas {
+  width: 100% !important;
+  max-height: 240px;
+}
+
+/* Heatmap */
+.heatmap-container {
+  overflow-x: auto;
+  padding: 8px 0;
+}
+
+.heatmap-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: fit-content;
+}
+
+.heatmap-months {
+  display: flex;
+  gap: 3px;
+  padding-left: 32px;
+  margin-bottom: 4px;
+}
+
+.heatmap-month-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  width: 14px;
+  text-align: center;
+}
+
+.heatmap-body {
+  display: flex;
+  gap: 8px;
+}
+
+.heatmap-days-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  justify-content: space-around;
+  padding-top: 0;
+}
+
+.heatmap-day-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  height: 14px;
+  line-height: 14px;
+  width: 24px;
+  text-align: right;
+}
+
+.heatmap-grid {
+  display: flex;
+  gap: 3px;
+}
+
+.heatmap-week {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.heatmap-cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: rgba(99, 102, 241, 0.08);
+  cursor: default;
+  transition: transform 0.15s ease;
+  position: relative;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.3);
+  z-index: 1;
+}
+
+.heatmap-cell[data-level="0"] { background: rgba(99, 102, 241, 0.06); }
+.heatmap-cell[data-level="1"] { background: rgba(99, 102, 241, 0.2); }
+.heatmap-cell[data-level="2"] { background: rgba(99, 102, 241, 0.4); }
+.heatmap-cell[data-level="3"] { background: rgba(99, 102, 241, 0.6); }
+.heatmap-cell[data-level="4"] { background: rgba(99, 102, 241, 0.85); }
+
+[data-theme="dark"] .heatmap-cell[data-level="0"] { background: rgba(99, 102, 241, 0.1); }
+[data-theme="dark"] .heatmap-cell[data-level="1"] { background: rgba(99, 102, 241, 0.25); }
+[data-theme="dark"] .heatmap-cell[data-level="2"] { background: rgba(99, 102, 241, 0.45); }
+[data-theme="dark"] .heatmap-cell[data-level="3"] { background: rgba(99, 102, 241, 0.65); }
+[data-theme="dark"] .heatmap-cell[data-level="4"] { background: rgba(99, 102, 241, 0.9); }
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  justify-content: flex-end;
+}
+
+.heatmap-legend-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+@media (max-width: 768px) {
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-grid .span-2 {
+    grid-column: span 1;
+  }
+}
+
+/* Syllabus */
+.syllabus-summary {
+  margin-bottom: 20px;
+}
+
+.syllabus-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  text-align: center;
+}
+
+.syllabus-summary-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.syllabus-summary-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.syllabus-item {
+  padding: 16px;
+}
+
+.syllabus-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+
+.syllabus-topic-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.syllabus-progress-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+
+@media (max-width: 600px) {
+  .syllabus-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Exams */
+.exam-card {
+  margin-bottom: 16px;
+}
+
+.exam-card.nearest {
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+.exam-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.exam-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.exam-card-badge {
+  font-size: 0.7rem;
+  padding: 3px 10px;
+  background: var(--primary);
+  color: white;
+  border-radius: 99px;
+  font-weight: 600;
+}
+
+.exam-countdown-large {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.countdown-unit {
+  text-align: center;
+  padding: 16px 8px;
+  background: rgba(99, 102, 241, 0.06);
+  border-radius: var(--radius-sm);
+}
+
+.countdown-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 480px) {
+  .exam-countdown-large {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Subject Detail */
+.subject-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.subject-stat-card {
+  text-align: center;
+  padding: 16px;
+  background: rgba(99, 102, 241, 0.05);
+  border-radius: var(--radius-sm);
+}
+
+.subject-stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.subject-stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.subject-target-section {
+  margin-top: 20px;
+}
+
+.subject-target-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.subject-target-header label {
+  font-weight: 600;
+}
+
+.subject-target-input {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.subject-target-input input {
+  max-width: 100px;
+}
+
+@media (max-width: 600px) {
+  .subject-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

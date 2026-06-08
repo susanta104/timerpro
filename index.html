@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Personal Study Command Center - Offline-first PWA for MBBS exam preparation">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Study Command Center</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/timer.css">
+  <link rel="stylesheet" href="css/analytics.css">
+  <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <div class="app-shell" id="app-shell">
+    <!-- Sidebar (tablet/desktop) -->
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none">
+            <rect width="40" height="40" rx="10" fill="url(#logoGrad)"/>
+            <path d="M12 28V12h4l6 10 6-10h4v16h-3.5V18l-5.5 9h-3L15 18v10H12z" fill="white"/>
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40">
+                <stop stop-color="#6366f1"/>
+                <stop offset="1" stop-color="#8b5cf6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="sidebar-title">
+          <h1>Study Command</h1>
+          <span>MBBS Prep Center</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav" role="navigation" aria-label="Sidebar">
+        <button class="nav-item active" data-view="dashboard" aria-current="page">
+          <span class="nav-icon" aria-hidden="true">📊</span>
+          <span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-item" data-view="timer">
+          <span class="nav-icon" aria-hidden="true">⏱️</span>
+          <span class="nav-label">Study Timer</span>
+        </button>
+        <button class="nav-item" data-view="sessions">
+          <span class="nav-icon" aria-hidden="true">📚</span>
+          <span class="nav-label">Sessions</span>
+        </button>
+        <button class="nav-item" data-view="subjects">
+          <span class="nav-icon" aria-hidden="true">🩺</span>
+          <span class="nav-label">Subjects</span>
+        </button>
+        <button class="nav-item" data-view="syllabus">
+          <span class="nav-icon" aria-hidden="true">📋</span>
+          <span class="nav-label">Syllabus Tracker</span>
+        </button>
+        <button class="nav-item" data-view="analytics">
+          <span class="nav-icon" aria-hidden="true">📈</span>
+          <span class="nav-label">Analytics</span>
+        </button>
+        <button class="nav-item" data-view="exams">
+          <span class="nav-icon" aria-hidden="true">🎯</span>
+          <span class="nav-label">Exam Countdown</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+          <span class="nav-icon" aria-hidden="true">⚙️</span>
+          <span class="nav-label">Settings</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="offline-badge" id="offline-badge" role="status" aria-live="polite">
+          <span class="status-dot"></span>
+          <span>Online</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content" id="main-content" role="main">
+      <header class="top-bar" aria-label="Page header">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar">
+          <span></span><span></span><span></span>
+        </button>
+        <h2 class="page-title" id="page-title">Dashboard</h2>
+        <div class="top-bar-actions">
+          <button class="icon-btn" id="theme-toggle-btn" aria-label="Toggle theme" title="Toggle theme">🌓</button>
+        </div>
+      </header>
+
+      <!-- Dashboard View -->
+      <section class="view active" id="view-dashboard" aria-labelledby="page-title">
+        <div class="dashboard-grid">
+          <div class="card glass streak-card">
+            <h3>Study Streak</h3>
+            <div class="streak-stats">
+              <div class="streak-item">
+                <span class="streak-value" id="dash-current-streak">0</span>
+                <span class="streak-label">Current Streak</span>
+              </div>
+              <div class="streak-divider" aria-hidden="true"></div>
+              <div class="streak-item">
+                <span class="streak-value" id="dash-longest-streak">0</span>
+                <span class="streak-label">Longest Streak</span>
+              </div>
+            </div>
+            <div class="streak-fire" aria-hidden="true">🔥</div>
+          </div>
+
+          <div class="card glass exam-widget" id="dash-exam-widget">
+            <h3>Nearest Exam</h3>
+            <div id="dash-exam-content">
+              <p class="empty-state">No upcoming exams</p>
+            </div>
+          </div>
+
+          <div class="card glass">
+            <h3>Today's Progress</h3>
+            <div class="progress-stats">
+              <div class="stat-block">
+                <span class="stat-value" id="dash-today-hours">0h</span>
+                <span class="stat-label">Study Hours</span>
+              </div>
+              <div class="stat-block">
+                <span class="stat-value" id="dash-today-sessions">0</span>
+                <span class="stat-label">Sessions</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card glass">
+            <h3>Weekly Summary</h3>
+            <div class="progress-stats">
+              <div class="stat-block">
+                <span class="stat-value" id="dash-week-hours">0h</span>
+                <span class="stat-label">Total Hours</span>
+              </div>
+              <div class="stat-block">
+                <span class="stat-value" id="dash-week-sessions">0</span>
+                <span class="stat-label">Sessions</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card glass goal-card">
+            <h3>Weekly Goal</h3>
+            <div class="goal-progress">
+              <div class="progress-bar-wrap">
+                <div class="progress-bar" id="dash-weekly-goal-bar" style="width: 0%"></div>
+              </div>
+              <span class="goal-text" id="dash-weekly-goal-text">0% of weekly goal</span>
+            </div>
+          </div>
+
+          <div class="card glass quote-card">
+            <h3>Motivation</h3>
+            <blockquote id="dash-quote">
+              <p>"Medicine is a science of uncertainty and an art of probability."</p>
+              <cite>— William Osler</cite>
+            </blockquote>
+            <button class="btn btn-ghost btn-sm" id="dash-new-quote" aria-label="Get new quote">New Quote</button>
+          </div>
+
+          <div class="card glass span-2">
+            <h3>Subject Breakdown (This Week)</h3>
+            <div class="subject-bars" id="dash-subject-bars"></div>
+          </div>
+
+          <div class="card glass span-2">
+            <h3>Recent Sessions</h3>
+            <div class="recent-sessions" id="dash-recent-sessions">
+              <p class="empty-state">No sessions yet. Start studying!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Timer View -->
+      <section class="view" id="view-timer" aria-label="Study Timer">
+        <div class="timer-container">
+          <div class="timer-setup card glass" id="timer-setup">
+            <h3>Before You Start</h3>
+            <div class="form-group">
+              <label for="timer-subject">Subject</label>
+              <select id="timer-subject" aria-required="true">
+                <option value="Medicine">Medicine</option>
+                <option value="Surgery">Surgery</option>
+                <option value="OBGYN">OBGYN</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="timer-topic">Topic <span class="optional">(optional)</span></label>
+              <input type="text" id="timer-topic" placeholder="e.g. Cardiology, Orthopedics..." maxlength="100">
+            </div>
+          </div>
+
+          <div class="timer-modes" role="tablist" aria-label="Timer modes">
+            <button class="mode-btn active" data-mode="pomodoro" role="tab" aria-selected="true">Pomodoro</button>
+            <button class="mode-btn" data-mode="short-break" role="tab" aria-selected="false">Short Break</button>
+            <button class="mode-btn" data-mode="long-break" role="tab" aria-selected="false">Long Break</button>
+            <button class="mode-btn" data-mode="custom" role="tab" aria-selected="false">Custom</button>
+          </div>
+
+          <div class="timer-presets" id="timer-presets">
+            <button class="preset-btn active" data-work="25" data-short="5" data-long="15">25/5</button>
+            <button class="preset-btn" data-work="50" data-short="10" data-long="20">50/10</button>
+            <button class="preset-btn" data-work="90" data-short="20" data-long="30">90/20</button>
+          </div>
+
+          <div class="custom-timer-inputs hidden" id="custom-timer-inputs">
+            <div class="form-group">
+              <label for="custom-minutes">Minutes</label>
+              <input type="number" id="custom-minutes" min="1" max="180" value="25">
+            </div>
+            <div class="form-group">
+              <label for="custom-seconds">Seconds</label>
+              <input type="number" id="custom-seconds" min="0" max="59" value="0">
+            </div>
+          </div>
+
+          <div class="timer-display-wrap">
+            <svg class="timer-ring" viewBox="0 0 200 200" aria-hidden="true">
+              <circle class="timer-ring-bg" cx="100" cy="100" r="90"/>
+              <circle class="timer-ring-progress" id="timer-ring-progress" cx="100" cy="100" r="90"/>
+            </svg>
+            <div class="timer-display" id="timer-display" role="timer" aria-live="polite" aria-atomic="true">25:00</div>
+            <div class="timer-mode-label" id="timer-mode-label">Focus Time</div>
+          </div>
+
+          <div class="timer-controls">
+            <button class="btn btn-primary btn-lg" id="timer-start" aria-label="Start timer">Start</button>
+            <button class="btn btn-secondary btn-lg hidden" id="timer-pause" aria-label="Pause timer">Pause</button>
+            <button class="btn btn-secondary btn-lg hidden" id="timer-resume" aria-label="Resume timer">Resume</button>
+            <button class="btn btn-ghost btn-lg" id="timer-reset" aria-label="Reset timer">Reset</button>
+          </div>
+
+          <div class="timer-stats card glass">
+            <h3>Timer Statistics</h3>
+            <div class="progress-stats">
+              <div class="stat-block">
+                <span class="stat-value" id="timer-today-total">0h</span>
+                <span class="stat-label">Today</span>
+              </div>
+              <div class="stat-block">
+                <span class="stat-value" id="timer-week-total">0h</span>
+                <span class="stat-label">This Week</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sessions View -->
+      <section class="view" id="view-sessions" aria-label="Study Sessions">
+        <div class="view-toolbar">
+          <div class="search-box">
+            <label for="sessions-search" class="visually-hidden">Search sessions</label>
+            <input type="search" id="sessions-search" placeholder="Search sessions..." aria-label="Search sessions">
+          </div>
+          <div class="toolbar-filters">
+            <label for="sessions-filter-subject" class="visually-hidden">Filter by subject</label>
+            <select id="sessions-filter-subject" aria-label="Filter by subject">
+              <option value="">All Subjects</option>
+              <option value="Medicine">Medicine</option>
+              <option value="Surgery">Surgery</option>
+              <option value="OBGYN">OBGYN</option>
+            </select>
+            <label for="sessions-sort" class="visually-hidden">Sort sessions</label>
+            <select id="sessions-sort" aria-label="Sort sessions">
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="duration-desc">Longest First</option>
+              <option value="duration-asc">Shortest First</option>
+            </select>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-secondary btn-sm" id="sessions-export-csv">Export CSV</button>
+            <button class="btn btn-secondary btn-sm" id="sessions-export-json">Export JSON</button>
+            <button class="btn btn-primary btn-sm" id="sessions-add">Add Session</button>
+          </div>
+        </div>
+        <div class="sessions-list" id="sessions-list" role="list" aria-label="Study sessions list">
+          <p class="empty-state">No sessions recorded yet.</p>
+        </div>
+      </section>
+
+      <!-- Subjects View -->
+      <section class="view" id="view-subjects" aria-label="Subjects">
+        <div class="subject-tabs" role="tablist" aria-label="Subject tabs">
+          <button class="subject-tab active" data-subject="Medicine" role="tab" aria-selected="true">Medicine</button>
+          <button class="subject-tab" data-subject="Surgery" role="tab" aria-selected="false">Surgery</button>
+          <button class="subject-tab" data-subject="OBGYN" role="tab" aria-selected="false">OBGYN</button>
+        </div>
+        <div class="subject-detail card glass" id="subject-detail">
+          <!-- Populated by subjects.js -->
+        </div>
+      </section>
+
+      <!-- Syllabus View -->
+      <section class="view" id="view-syllabus" aria-label="Syllabus Tracker">
+        <div class="view-toolbar">
+          <div class="search-box">
+            <label for="syllabus-search" class="visually-hidden">Search topics</label>
+            <input type="search" id="syllabus-search" placeholder="Search topics..." aria-label="Search topics">
+          </div>
+          <div class="toolbar-filters">
+            <select id="syllabus-filter-subject" aria-label="Filter by subject">
+              <option value="">All Subjects</option>
+              <option value="Medicine">Medicine</option>
+              <option value="Surgery">Surgery</option>
+              <option value="OBGYN">OBGYN</option>
+            </select>
+            <select id="syllabus-filter-status" aria-label="Filter by status">
+              <option value="">All Status</option>
+              <option value="Not Started">Not Started</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" id="syllabus-add">Add Topic</button>
+        </div>
+        <div class="syllabus-summary card glass" id="syllabus-summary"></div>
+        <div class="syllabus-list" id="syllabus-list" role="list">
+          <p class="empty-state">No syllabus topics yet. Add your first topic!</p>
+        </div>
+      </section>
+
+      <!-- Analytics View -->
+      <section class="view" id="view-analytics" aria-label="Analytics">
+        <div class="insights-grid card glass" id="analytics-insights">
+          <div class="insight-item">
+            <span class="insight-label">Best Study Day</span>
+            <span class="insight-value" id="insight-best-day">—</span>
+          </div>
+          <div class="insight-item">
+            <span class="insight-label">Most Studied Subject</span>
+            <span class="insight-value" id="insight-top-subject">—</span>
+          </div>
+          <div class="insight-item">
+            <span class="insight-label">Avg Session Length</span>
+            <span class="insight-value" id="insight-avg-session">—</span>
+          </div>
+        </div>
+        <div class="charts-grid">
+          <div class="card glass chart-card">
+            <h3>Weekly Study Hours</h3>
+            <canvas id="chart-weekly" aria-label="Weekly study hours bar chart" role="img"></canvas>
+          </div>
+          <div class="card glass chart-card">
+            <h3>Monthly Study Hours</h3>
+            <canvas id="chart-monthly" aria-label="Monthly study hours bar chart" role="img"></canvas>
+          </div>
+          <div class="card glass chart-card">
+            <h3>Yearly Study Hours</h3>
+            <canvas id="chart-yearly" aria-label="Yearly study hours bar chart" role="img"></canvas>
+          </div>
+          <div class="card glass chart-card">
+            <h3>All-Time Hours</h3>
+            <canvas id="chart-alltime" aria-label="All-time study hours bar chart" role="img"></canvas>
+          </div>
+          <div class="card glass chart-card">
+            <h3>Subject Distribution</h3>
+            <canvas id="chart-subjects" aria-label="Subject distribution pie chart" role="img"></canvas>
+          </div>
+          <div class="card glass chart-card span-2">
+            <h3>Sessions Per Day</h3>
+            <canvas id="chart-sessions-line" aria-label="Sessions per day line chart" role="img"></canvas>
+          </div>
+          <div class="card glass chart-card span-2">
+            <h3>Study Heatmap (Last 12 Weeks)</h3>
+            <div class="heatmap-container" id="study-heatmap" aria-label="Study activity heatmap"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Exams View -->
+      <section class="view" id="view-exams" aria-label="Exam Countdown">
+        <div class="view-toolbar">
+          <button class="btn btn-primary" id="exams-add">Add Exam</button>
+        </div>
+        <div class="exams-list" id="exams-list" role="list">
+          <p class="empty-state">No exams added. Add your upcoming professional exams!</p>
+        </div>
+      </section>
+
+      <!-- Settings View -->
+      <section class="view" id="view-settings" aria-label="Settings">
+        <div class="settings-sections">
+          <div class="card glass settings-section">
+            <h3>Preferences</h3>
+            <div class="setting-row">
+              <label for="setting-theme">Theme</label>
+              <select id="setting-theme" aria-label="Theme selection">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="auto">Auto (System)</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <label for="setting-sound">Timer Sound</label>
+              <select id="setting-sound" aria-label="Timer sound selection">
+                <option value="bell">Bell</option>
+                <option value="soft">Soft</option>
+                <option value="digital">Digital</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <label for="setting-notifications">Notifications</label>
+              <select id="setting-notifications" aria-label="Notification settings">
+                <option value="enabled">Enabled</option>
+                <option value="disabled">Disabled</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <label for="setting-daily-goal">Daily Goal (hours)</label>
+              <input type="number" id="setting-daily-goal" min="1" max="24" value="6" aria-label="Daily study goal in hours">
+            </div>
+            <div class="setting-row">
+              <label for="setting-weekly-goal">Weekly Goal (hours)</label>
+              <input type="number" id="setting-weekly-goal" min="1" max="168" value="40" aria-label="Weekly study goal in hours">
+            </div>
+            <button class="btn btn-primary" id="settings-save">Save Preferences</button>
+          </div>
+
+          <div class="card glass settings-section">
+            <h3>Backup &amp; Restore</h3>
+            <p class="setting-desc">Export all your data as JSON for safekeeping, or import a previous backup.</p>
+            <div class="setting-actions">
+              <button class="btn btn-secondary" id="settings-export-all">Export All Data (JSON)</button>
+              <label class="btn btn-secondary file-label" for="settings-import-file">
+                Import Data (JSON)
+                <input type="file" id="settings-import-file" accept=".json,application/json" hidden>
+              </label>
+            </div>
+          </div>
+
+          <div class="card glass settings-section danger-zone">
+            <h3>Danger Zone</h3>
+            <p class="setting-desc">These actions are irreversible. Proceed with caution.</p>
+            <div class="danger-actions">
+              <button class="btn btn-danger" data-danger="sessions">Clear Sessions</button>
+              <button class="btn btn-danger" data-danger="analytics">Clear Analytics</button>
+              <button class="btn btn-danger" data-danger="syllabus">Reset Syllabus</button>
+              <button class="btn btn-danger" data-danger="everything">Reset Everything</button>
+            </div>
+          </div>
+
+          <div class="card glass settings-section about-section">
+            <h3>About</h3>
+            <div class="about-info">
+              <p class="about-title">Study Command Center</p>
+              <p>Created by: <strong>Susanta Debnath</strong></p>
+              <p>Version: <strong>1.0</strong></p>
+              <p>Offline First PWA</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom nav (mobile) -->
+    <nav class="bottom-nav" id="bottom-nav" role="navigation" aria-label="Mobile navigation">
+      <button class="bottom-nav-item active" data-view="dashboard" aria-current="page">
+        <span class="nav-icon" aria-hidden="true">📊</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="bottom-nav-item" data-view="timer">
+        <span class="nav-icon" aria-hidden="true">⏱️</span>
+        <span class="nav-label">Timer</span>
+      </button>
+      <button class="bottom-nav-item" data-view="sessions">
+        <span class="nav-icon" aria-hidden="true">📚</span>
+        <span class="nav-label">Sessions</span>
+      </button>
+      <button class="bottom-nav-item" data-view="subjects">
+        <span class="nav-icon" aria-hidden="true">🩺</span>
+        <span class="nav-label">Subjects</span>
+      </button>
+      <button class="bottom-nav-item" data-view="more" id="more-nav-btn" aria-haspopup="true" aria-expanded="false">
+        <span class="nav-icon" aria-hidden="true">☰</span>
+        <span class="nav-label">More</span>
+      </button>
+    </nav>
+
+    <!-- Mobile more menu -->
+    <div class="more-menu hidden" id="more-menu" role="menu" aria-label="More navigation options">
+      <button class="more-menu-item" data-view="syllabus" role="menuitem">📋 Syllabus Tracker</button>
+      <button class="more-menu-item" data-view="analytics" role="menuitem">📈 Analytics</button>
+      <button class="more-menu-item" data-view="exams" role="menuitem">🎯 Exam Countdown</button>
+      <button class="more-menu-item" data-view="settings" role="menuitem">⚙️ Settings</button>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay hidden" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal glass" id="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Modal</h3>
+        <button class="modal-close" id="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
+
+  <script src="js/vendor/chart.umd.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/timer.js"></script>
+  <script src="js/sessions.js"></script>
+  <script src="js/subjects.js"></script>
+  <script src="js/syllabus.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/exams.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

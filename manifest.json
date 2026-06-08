@@ -1,0 +1,44 @@
+{
+  "name": "Study Command Center",
+  "short_name": "StudyCmd",
+  "description": "Personal Study Command Center - Offline-first PWA for MBBS exam preparation by Susanta Debnath",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "orientation": "any",
+  "scope": "./",
+  "lang": "en",
+  "categories": ["education", "productivity", "medical"],
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Study Timer",
+      "short_name": "Timer",
+      "description": "Start a Pomodoro study session",
+      "url": "./index.html#timer",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View study progress",
+      "url": "./index.html#dashboard",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
