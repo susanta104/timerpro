@@ -350,7 +350,10 @@ const Timer = (() => {
         const saved = await saveCompletedSession({
           ...sessionMeta,
           timerMode: completedMode,
-          durationMinutes: getFocusDurationMinutes(completedMode)
+          // Use the duration recorded when the session started (activeSession)
+          // rather than re-deriving from totalSeconds, which may have changed
+          // if the user switched custom inputs while the timer was running.
+          durationMinutes: sessionMeta.durationMinutes || getFocusDurationMinutes(completedMode)
         });
 
         pomodoroCount++;

@@ -132,7 +132,11 @@ const Storage = (() => {
     }
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readonly');
-      const request = tx.objectStore(storeName).get(id);
+      // IndexedDB auto-increment keys are numbers; coerce string ids from
+      // dataset attributes back to numbers so the lookup succeeds.
+      const numericId = Number(id);
+      const lookupId = Number.isFinite(numericId) ? numericId : id;
+      const request = tx.objectStore(storeName).get(lookupId);
       request.onsuccess = () => resolve(request.result || null);
       request.onerror = () => reject(request.error);
     });
@@ -211,7 +215,11 @@ const Storage = (() => {
     }
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readwrite');
-      const request = tx.objectStore(storeName).delete(id);
+      // IndexedDB auto-increment keys are numbers; coerce string ids from
+      // dataset attributes back to numbers so the delete succeeds.
+      const numericId = Number(id);
+      const lookupId = Number.isFinite(numericId) ? numericId : id;
+      const request = tx.objectStore(storeName).delete(lookupId);
       request.onsuccess = () => resolve(true);
       request.onerror = () => reject(request.error);
     });

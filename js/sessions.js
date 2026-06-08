@@ -100,8 +100,13 @@ const Sessions = (() => {
     document.getElementById('session-cancel').onclick = App.hideModal;
     document.getElementById('session-save').onclick = async () => {
       const dateVal = document.getElementById('session-date').value;
+      const parsedDate = dateVal ? new Date(dateVal) : new Date();
+      if (isNaN(parsedDate.getTime())) {
+        App.showToast('Please enter a valid date and time', 'error');
+        return;
+      }
       const data = {
-        date: new Date(dateVal).toISOString(),
+        date: parsedDate.toISOString(),
         subject: document.getElementById('session-subject').value,
         topic: document.getElementById('session-topic').value.trim(),
         duration: parseInt(document.getElementById('session-duration').value),
@@ -243,7 +248,13 @@ const Sessions = (() => {
     });
   }
 
-  setupEvents();
+  // Defer event setup until the DOM is fully ready so all session-view
+  // elements (#sessions-search, #sessions-add, etc.) are available.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupEvents);
+  } else {
+    setupEvents();
+  }
 
   return { render };
 })();
