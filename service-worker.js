@@ -2,7 +2,7 @@
  * Study Command Center - Service Worker
  * Offline-first caching for GitHub Pages deployment
  */
-const CACHE_NAME = 'study-command-center-v2';
+const CACHE_NAME = 'study-command-center-v3';
 const OFFLINE_URL = './index.html';
 
 const PRECACHE_ASSETS = [

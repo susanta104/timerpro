@@ -140,21 +140,44 @@ const Storage = (() => {
 
   async function add(storeName, item) {
     await openDB();
+    const cleanItem = { ...item };
+    delete cleanItem.id;
+
     if (useLocalStorage) {
       const items = lsGet(storeName) || [];
-      const id = Date.now() + Math.random();
-      const newItem = { ...item, id };
+      const id = typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `id-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      const newItem = { ...cleanItem, id };
       items.push(newItem);
       lsSet(storeName, items);
       return newItem;
     }
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readwrite');
-      const request = tx.objectStore(storeName).add(item);
+      const store = tx.objectStore(storeName);
+      const request = store.add(cleanItem);
       request.onsuccess = () => {
-        resolve({ ...item, id: request.result });
+        resolve({ ...cleanItem, id: request.result });
       };
-      request.onerror = () => reject(request.error);
+      request.onerror = () => reject(request.error || new Error('Failed to add record'));
+      tx.onerror = () => reject(tx.error || new Error('Transaction failed'));
+    });
+  }
+
+  async function addSession(session) {
+    const subject = session.subject || 'Medicine';
+    const duration = Number(session.duration);
+    if (!subject || !duration || duration <= 0) {
+      throw new Error('Invalid session: subject and duration are required');
+    }
+    return add(STORES.sessions, {
+      date: session.date || new Date().toISOString(),
+      subject,
+      topic: session.topic || '',
+      duration: Math.round(duration * 10) / 10,
+      notes: session.notes || '',
+      source: session.source || 'timer'
     });
   }
 
@@ -162,7 +185,7 @@ const Storage = (() => {
     await openDB();
     if (useLocalStorage) {
       const items = lsGet(storeName) || [];
-      const idx = items.findIndex(i => i.id === item.id);
+      const idx = items.findIndex(i => String(i.id) === String(item.id));
       if (idx >= 0) {
         items[idx] = item;
       } else {
@@ -182,7 +205,7 @@ const Storage = (() => {
   async function remove(storeName, id) {
     await openDB();
     if (useLocalStorage) {
-      const items = (lsGet(storeName) || []).filter(i => i.id !== id);
+      const items = (lsGet(storeName) || []).filter(i => String(i.id) !== String(id));
       lsSet(storeName, items);
       return true;
     }
@@ -449,6 +472,7 @@ const Storage = (() => {
     getAll,
     getById,
     add,
+    addSession,
     put,
     remove,
     clearStore,

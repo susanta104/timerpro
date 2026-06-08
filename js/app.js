@@ -70,6 +70,15 @@ const App = (() => {
     };
   }
 
+  function refreshStudyViews() {
+    Dashboard.render();
+    Sessions.render();
+    Subjects.render();
+    Timer.render();
+    if (currentView === 'analytics') Analytics.render();
+    if (currentView === 'syllabus') Syllabus.render();
+  }
+
   function navigateTo(view) {
     if (!VIEW_TITLES[view]) return;
     currentView = view;
@@ -275,6 +284,7 @@ const App = (() => {
     hideModal,
     showConfirm,
     applyTheme,
+    refreshStudyViews,
     getCurrentView: () => currentView
   };
 })();

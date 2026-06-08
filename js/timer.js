@@ -3,6 +3,7 @@
  */
 const Timer = (() => {
   const RING_CIRCUMFERENCE = 2 * Math.PI * 90;
+  const FOCUS_MODES = new Set(['pomodoro', 'custom']);
 
   let mode = 'pomodoro';
   let workMinutes = 25;
@@ -12,10 +13,12 @@ const Timer = (() => {
   let remainingSeconds = totalSeconds;
   let isRunning = false;
   let isPaused = false;
+  let isCompleting = false;
   let intervalId = null;
   let endTimestamp = null;
   let wakeLock = null;
   let pomodoroCount = 0;
+  let activeSession = null;
 
   const modeLabels = {
     'pomodoro': 'Focus Time',
@@ -42,6 +45,74 @@ const Timer = (() => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  function isFocusMode(timerMode) {
+    return FOCUS_MODES.has(timerMode);
+  }
+
+  function captureSessionMeta() {
+    const subjectEl = document.getElementById('timer-subject');
+    const topicEl = document.getElementById('timer-topic');
+    return {
+      subject: subjectEl?.value || 'Medicine',
+      topic: (topicEl?.value || '').trim(),
+      durationMinutes: getFocusDurationMinutes(mode),
+      timerMode: mode
+    };
+  }
+
+  function getFocusDurationMinutes(timerMode) {
+    if (timerMode === 'custom') {
+      return Math.max(0.1, Math.round((totalSeconds / 60) * 10) / 10);
+    }
+    if (timerMode === 'pomodoro') {
+      return workMinutes;
+    }
+    return Math.max(0.1, Math.round((totalSeconds / 60) * 10) / 10);
+  }
+
+  async function syncSyllabusProgress(session) {
+    if (!session.topic) return;
+
+    const topics = await Storage.getAll(Storage.STORES.syllabus);
+    const match = topics.find((t) =>
+      t.subject === session.subject &&
+      t.topic.toLowerCase() === session.topic.toLowerCase()
+    );
+
+    if (!match) return;
+
+    const completedHours = (match.completedHours || 0) + (session.durationMinutes / 60);
+    const estimatedHours = match.estimatedHours || 0;
+    let status = match.status;
+
+    if (estimatedHours > 0 && completedHours >= estimatedHours) {
+      status = 'Completed';
+    } else if (completedHours > 0) {
+      status = 'In Progress';
+    }
+
+    await Storage.put(Storage.STORES.syllabus, {
+      ...match,
+      completedHours: Math.round(completedHours * 10) / 10,
+      status
+    });
+  }
+
+  async function saveCompletedSession(sessionMeta) {
+    const label = sessionMeta.timerMode === 'custom' ? 'Custom' : 'Pomodoro';
+    const saved = await Storage.addSession({
+      date: new Date().toISOString(),
+      subject: sessionMeta.subject,
+      topic: sessionMeta.topic,
+      duration: sessionMeta.durationMinutes,
+      notes: `${label} study session (${Storage.formatDuration(sessionMeta.durationMinutes)})`,
+      source: 'timer'
+    });
+
+    await syncSyllabusProgress(sessionMeta);
+    return saved;
   }
 
   function updateDisplay() {
@@ -82,9 +153,11 @@ const Timer = (() => {
     } else if (mode === 'long-break') {
       totalSeconds = longBreakMinutes * 60;
     } else if (mode === 'custom') {
-      const mins = parseInt(document.getElementById('custom-minutes').value) || 25;
-      const secs = parseInt(document.getElementById('custom-seconds').value) || 0;
-      totalSeconds = mins * 60 + secs;
+      const minsRaw = parseInt(document.getElementById('custom-minutes').value, 10);
+      const secsRaw = parseInt(document.getElementById('custom-seconds').value, 10);
+      const mins = Number.isNaN(minsRaw) ? 25 : Math.max(0, minsRaw);
+      const secs = Number.isNaN(secsRaw) ? 0 : Math.max(0, Math.min(59, secsRaw));
+      totalSeconds = Math.max(1, mins * 60 + secs);
     }
 
     if (!isRunning && !isPaused) {
@@ -130,7 +203,8 @@ const Timer = (() => {
         endTimestamp,
         subject: document.getElementById('timer-subject').value,
         topic: document.getElementById('timer-topic').value,
-        pomodoroCount
+        pomodoroCount,
+        activeSession
       });
     }
   }
@@ -145,6 +219,7 @@ const Timer = (() => {
     longBreakMinutes = state.longBreakMinutes || 15;
     totalSeconds = state.totalSeconds;
     pomodoroCount = state.pomodoroCount || 0;
+    activeSession = state.activeSession || null;
 
     if (state.subject) document.getElementById('timer-subject').value = state.subject;
     if (state.topic) document.getElementById('timer-topic').value = state.topic;
@@ -185,6 +260,8 @@ const Timer = (() => {
       saveState();
 
       if (remainingSeconds <= 0) {
+        clearInterval(intervalId);
+        intervalId = null;
         onComplete();
       }
     }, 200);
@@ -198,6 +275,7 @@ const Timer = (() => {
 
     if (!isPaused) {
       setMode(mode);
+      activeSession = captureSessionMeta();
     }
 
     isRunning = true;
@@ -215,6 +293,7 @@ const Timer = (() => {
     isRunning = false;
     isPaused = true;
     clearInterval(intervalId);
+    intervalId = null;
     remainingSeconds = Math.max(0, Math.ceil((endTimestamp - Date.now()) / 1000));
     releaseWakeLock();
     updateControls();
@@ -235,7 +314,10 @@ const Timer = (() => {
   async function reset() {
     isRunning = false;
     isPaused = false;
+    isCompleting = false;
     clearInterval(intervalId);
+    intervalId = null;
+    activeSession = null;
     releaseWakeLock();
     setMode(mode);
     updateControls();
@@ -243,58 +325,99 @@ const Timer = (() => {
   }
 
   async function onComplete() {
+    if (isCompleting) return;
+    isCompleting = true;
+
+    const completedMode = mode;
+    const sessionMeta = activeSession || captureSessionMeta();
+    const wasFocusSession = isFocusMode(completedMode);
+
     isRunning = false;
     isPaused = false;
     clearInterval(intervalId);
+    intervalId = null;
     releaseWakeLock();
     updateControls();
 
-    await Notifications.playTimerComplete();
+    try {
+      if (wasFocusSession) {
+        try {
+          await Notifications.playTimerComplete();
+        } catch {
+          // Sound failure must not block session save
+        }
 
-    if (mode === 'pomodoro') {
-      const subject = document.getElementById('timer-subject').value;
-      const topic = document.getElementById('timer-topic').value;
-      const duration = workMinutes;
+        const saved = await saveCompletedSession({
+          ...sessionMeta,
+          timerMode: completedMode,
+          durationMinutes: getFocusDurationMinutes(completedMode)
+        });
 
-      await Storage.add(Storage.STORES.sessions, {
-        date: new Date().toISOString(),
-        subject,
-        topic: topic || '',
-        duration,
-        notes: `Pomodoro session (${workMinutes} min)`
-      });
+        pomodoroCount++;
 
-      pomodoroCount++;
-      await Notifications.notifySessionComplete(subject, duration);
+        try {
+          await Notifications.notifySessionComplete(saved.subject, saved.duration);
+        } catch {
+          // Notification failure must not block UI update
+        }
 
-      const sessions = await Storage.getAll(Storage.STORES.sessions);
-      const today = Storage.getDateKey(new Date());
-      const todayMinutes = sessions
-        .filter(s => Storage.getDateKey(s.date) === today)
-        .reduce((sum, s) => sum + (s.duration || 0), 0);
-      const dailyGoal = await Storage.getSetting('dailyGoal');
-      if (todayMinutes / 60 >= dailyGoal) {
-        await Notifications.notifyDailyGoalReached((todayMinutes / 60).toFixed(1));
-      }
+        const sessions = await Storage.getAll(Storage.STORES.sessions);
+        const today = Storage.getDateKey(new Date());
+        const todayMinutes = sessions
+          .filter(s => Storage.getDateKey(s.date) === today)
+          .reduce((sum, s) => sum + (s.duration || 0), 0);
+        const dailyGoal = await Storage.getSetting('dailyGoal');
+        if (todayMinutes / 60 >= dailyGoal) {
+          try {
+            await Notifications.notifyDailyGoalReached((todayMinutes / 60).toFixed(1));
+          } catch {
+            // ignore
+          }
+        }
 
-      if (pomodoroCount % 4 === 0) {
-        mode = 'long-break';
-        App.showToast('Great work! Time for a long break.', 'success');
+        App.showToast(
+          `Session saved: ${saved.subject} — ${Storage.formatDuration(saved.duration)}`,
+          'success'
+        );
+
+        if (completedMode === 'pomodoro') {
+          if (pomodoroCount % 4 === 0) {
+            mode = 'long-break';
+            App.showToast('Great work! Time for a long break.', 'success');
+          } else {
+            mode = 'short-break';
+            App.showToast('Pomodoro complete! Take a short break.', 'success');
+          }
+        } else {
+          mode = 'pomodoro';
+          App.showToast('Study session complete!', 'success');
+        }
       } else {
-        mode = 'short-break';
-        App.showToast('Pomodoro complete! Take a short break.', 'success');
+        try {
+          await Notifications.playTimerComplete();
+        } catch {
+          // ignore
+        }
+        try {
+          await Notifications.notifyBreakComplete();
+        } catch {
+          // ignore
+        }
+        mode = 'pomodoro';
+        App.showToast('Break over! Ready for another session?', 'info');
       }
-    } else {
-      await Notifications.notifyBreakComplete();
-      mode = 'pomodoro';
-      App.showToast('Break over! Ready for another session?', 'info');
+
+      activeSession = null;
+      setMode(mode);
+      await Storage.clearTimerState();
+      await renderStats();
+      App.refreshStudyViews();
+    } catch (error) {
+      console.error('Failed to complete timer session:', error);
+      App.showToast('Failed to save study session. Please try again.', 'error');
+    } finally {
+      isCompleting = false;
     }
-
-    setMode(mode);
-    await Storage.clearTimerState();
-    renderStats();
-
-    if (App.getCurrentView() === 'dashboard') Dashboard.render();
   }
 
   async function renderStats() {

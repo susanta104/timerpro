@@ -206,13 +206,13 @@ const Sessions = (() => {
 
     container.querySelectorAll('[data-edit]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const session = await Storage.getById(Storage.STORES.sessions, parseInt(btn.dataset.edit) || btn.dataset.edit);
+        const session = await Storage.getById(Storage.STORES.sessions, btn.dataset.edit);
         if (session) showSessionForm(session);
       });
     });
 
     container.querySelectorAll('[data-delete]').forEach(btn => {
-      btn.addEventListener('click', () => deleteSession(parseInt(btn.dataset.delete) || btn.dataset.delete));
+      btn.addEventListener('click', () => deleteSession(btn.dataset.delete));
     });
   }
 
