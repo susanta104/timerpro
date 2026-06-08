@@ -2,7 +2,7 @@
  * Study Command Center - Service Worker
  * Offline-first caching for GitHub Pages deployment
  */
-const CACHE_NAME = 'study-command-center-v1';
+const CACHE_NAME = 'study-command-center-v2';
 const OFFLINE_URL = './index.html';
 
 const PRECACHE_ASSETS = [
@@ -28,9 +28,6 @@ const PRECACHE_ASSETS = [
   './js/vendor/chart.umd.min.js',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
-  './assets/sounds/bell.mp3',
-  './assets/sounds/soft.mp3',
-  './assets/sounds/digital.mp3',
   './assets/sounds/bell.wav',
   './assets/sounds/soft.wav',
   './assets/sounds/digital.wav'

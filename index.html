@@ -405,11 +405,14 @@
             </div>
             <div class="setting-row">
               <label for="setting-sound">Timer Sound</label>
-              <select id="setting-sound" aria-label="Timer sound selection">
-                <option value="bell">Bell</option>
-                <option value="soft">Soft</option>
-                <option value="digital">Digital</option>
-              </select>
+              <div class="setting-sound-controls">
+                <select id="setting-sound" aria-label="Timer sound selection">
+                  <option value="bell">Bell</option>
+                  <option value="soft">Soft</option>
+                  <option value="digital">Digital</option>
+                </select>
+                <button type="button" class="btn btn-secondary btn-sm" id="settings-test-sound" aria-label="Test timer sound">Test Sound</button>
+              </div>
             </div>
             <div class="setting-row">
               <label for="setting-notifications">Notifications</label>

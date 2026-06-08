@@ -803,6 +803,17 @@ textarea {
   max-width: 200px;
 }
 
+.setting-sound-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.setting-sound-controls select {
+  min-width: 120px;
+}
+
 .setting-desc {
   font-size: 0.85rem;
   color: var(--text-secondary);

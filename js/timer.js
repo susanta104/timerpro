@@ -193,6 +193,9 @@ const Timer = (() => {
   function start() {
     if (isRunning) return;
 
+    Notifications.unlockAudio();
+    Notifications.preloadSounds();
+
     if (!isPaused) {
       setMode(mode);
     }

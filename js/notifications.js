@@ -1,15 +1,184 @@
 /**
  * Study Command Center - Notifications & Sounds
+ * Uses Web Audio API (primary) with WAV file fallback.
  */
 const Notifications = (() => {
   let permissionGranted = false;
-  const audioCache = {};
+  let audioCtx = null;
+  let audioUnlocked = false;
+  const wavBuffers = {};
 
-  const SOUND_FILES = {
-    bell: ['assets/sounds/bell.mp3', 'assets/sounds/bell.wav'],
-    soft: ['assets/sounds/soft.mp3', 'assets/sounds/soft.wav'],
-    digital: ['assets/sounds/digital.mp3', 'assets/sounds/digital.wav']
+  const SOUND_WAV = {
+    bell: 'assets/sounds/bell.wav',
+    soft: 'assets/sounds/soft.wav',
+    digital: 'assets/sounds/digital.wav'
   };
+
+  function assetUrl(path) {
+    return new URL(path, window.location.href).href;
+  }
+
+  function getAudioContext() {
+    if (!audioCtx) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      audioCtx = new Ctx();
+    }
+    return audioCtx;
+  }
+
+  async function unlockAudio() {
+    const ctx = getAudioContext();
+    if (!ctx) return false;
+
+    if (ctx.state === 'suspended') {
+      try {
+        await ctx.resume();
+      } catch {
+        return false;
+      }
+    }
+
+    if (!audioUnlocked) {
+      const buffer = ctx.createBuffer(1, 1, 22050);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      source.start(0);
+      source.stop(0);
+      audioUnlocked = true;
+    }
+
+    return ctx.state === 'running';
+  }
+
+  function setupAudioUnlock() {
+    const unlock = () => {
+      unlockAudio();
+    };
+    const events = ['click', 'touchstart', 'keydown', 'pointerdown'];
+    events.forEach((evt) => {
+      document.addEventListener(evt, unlock, { once: false, passive: true });
+    });
+  }
+
+  async function loadWavBuffer(type) {
+    if (wavBuffers[type]) return wavBuffers[type];
+
+    const ctx = getAudioContext();
+    if (!ctx) return null;
+
+    try {
+      const response = await fetch(assetUrl(SOUND_WAV[type]));
+      if (!response.ok) return null;
+      const arrayBuffer = await response.arrayBuffer();
+      wavBuffers[type] = await ctx.decodeAudioData(arrayBuffer);
+      return wavBuffers[type];
+    } catch {
+      return null;
+    }
+  }
+
+  async function preloadSounds() {
+    await unlockAudio();
+    await Promise.all(
+      Object.keys(SOUND_WAV).map((type) => loadWavBuffer(type).catch(() => null))
+    );
+  }
+
+  function playBuffer(buffer, volume = 0.7) {
+    const ctx = getAudioContext();
+    if (!ctx || !buffer) return false;
+
+    const source = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    source.buffer = buffer;
+    gain.gain.value = volume;
+    source.connect(gain);
+    gain.connect(ctx.destination);
+    source.start(0);
+    return true;
+  }
+
+  function playBellSynth(ctx, startTime) {
+    const notes = [
+      { freq: 830, delay: 0, duration: 0.9 },
+      { freq: 1245, delay: 0.15, duration: 0.85 }
+    ];
+    notes.forEach(({ freq, delay, duration }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime + delay);
+      gain.gain.setValueAtTime(0.0001, startTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.45, startTime + delay + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + delay + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startTime + delay);
+      osc.stop(startTime + delay + duration + 0.05);
+    });
+  }
+
+  function playSoftSynth(ctx, startTime) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(523, startTime);
+    osc.frequency.exponentialRampToValueAtTime(392, startTime + 1.4);
+    gain.gain.setValueAtTime(0.0001, startTime);
+    gain.gain.exponentialRampToValueAtTime(0.35, startTime + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 1.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startTime);
+    osc.stop(startTime + 1.6);
+  }
+
+  function playDigitalSynth(ctx, startTime) {
+    const beeps = [0, 0.22, 0.44];
+    beeps.forEach((delay) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(880, startTime + delay);
+      gain.gain.setValueAtTime(0.0001, startTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.2, startTime + delay + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + delay + 0.14);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startTime + delay);
+      osc.stop(startTime + delay + 0.16);
+    });
+  }
+
+  const SYNTH_PLAYERS = {
+    bell: playBellSynth,
+    soft: playSoftSynth,
+    digital: playDigitalSynth
+  };
+
+  async function playSound(soundType) {
+    const type = soundType || (await Storage.getSetting('sound')) || 'bell';
+    const sound = SYNTH_PLAYERS[type] ? type : 'bell';
+
+    const unlocked = await unlockAudio();
+    if (!unlocked) {
+      App.showToast('Tap anywhere on the app to enable sounds', 'info');
+      return;
+    }
+
+    const buffer = await loadWavBuffer(sound);
+    if (buffer && playBuffer(buffer, 0.75)) {
+      return;
+    }
+
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const player = SYNTH_PLAYERS[sound] || SYNTH_PLAYERS.bell;
+    player(ctx, ctx.currentTime);
+  }
 
   async function requestPermission() {
     if (!('Notification' in window)) return false;
@@ -36,8 +205,8 @@ const Notifications = (() => {
 
     if ('Notification' in window && Notification.permission === 'granted') {
       const notification = new Notification(title, {
-        icon: 'assets/icons/icon-192.png',
-        badge: 'assets/icons/icon-192.png',
+        icon: assetUrl('assets/icons/icon-192.png'),
+        badge: assetUrl('assets/icons/icon-192.png'),
         ...options
       });
       notification.onclick = () => {
@@ -52,8 +221,8 @@ const Notifications = (() => {
       try {
         const reg = await navigator.serviceWorker.ready;
         await reg.showNotification(title, {
-          icon: 'assets/icons/icon-192.png',
-          badge: 'assets/icons/icon-192.png',
+          icon: assetUrl('assets/icons/icon-192.png'),
+          badge: assetUrl('assets/icons/icon-192.png'),
           ...options
         });
       } catch {
@@ -70,7 +239,6 @@ const Notifications = (() => {
       tag: 'session-complete',
       requireInteraction: false
     });
-    vibrate();
   }
 
   async function notifyBreakComplete() {
@@ -78,7 +246,6 @@ const Notifications = (() => {
       body: 'Time to get back to studying. You can do this!',
       tag: 'break-complete'
     });
-    vibrate();
   }
 
   async function notifyDailyGoalReached(hours) {
@@ -105,78 +272,22 @@ const Notifications = (() => {
     }
   }
 
-  function playWebAudioFallback(type) {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      const configs = {
-        bell: { freq: 830, type: 'sine', duration: 0.8, gain: 0.3 },
-        soft: { freq: 440, type: 'triangle', duration: 1.2, gain: 0.2 },
-        digital: { freq: 1200, type: 'square', duration: 0.15, gain: 0.15 }
-      };
-      const cfg = configs[type] || configs.bell;
-
-      osc.type = cfg.type;
-      osc.frequency.setValueAtTime(cfg.freq, ctx.currentTime);
-      gain.gain.setValueAtTime(cfg.gain, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + cfg.duration);
-
-      if (type === 'digital') {
-        osc.frequency.setValueAtTime(1600, ctx.currentTime + 0.15);
-        osc.frequency.setValueAtTime(1200, ctx.currentTime + 0.3);
-      }
-
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + cfg.duration + 0.1);
-    } catch {
-      // Audio not available
-    }
-  }
-
-  async function playSound(soundType) {
-    const type = soundType || await Storage.getSetting('sound') || 'bell';
-    const sources = SOUND_FILES[type] || SOUND_FILES.bell;
-
-    if (!audioCache[type]) {
-      const paths = Array.isArray(sources) ? sources : [sources];
-      audioCache[type] = new Audio(paths[0]);
-      audioCache[type].preload = 'auto';
-      audioCache[type]._fallbackPaths = paths.slice(1);
-    }
-
-    const audio = audioCache[type];
-    audio.currentTime = 0;
-
-    try {
-      await audio.play();
-    } catch {
-      if (audio._fallbackPaths?.length) {
-        audio.src = audio._fallbackPaths[0];
-        audio._fallbackPaths = audio._fallbackPaths.slice(1);
-        try {
-          await audio.play();
-          return;
-        } catch {
-          // fall through to Web Audio
-        }
-      }
-      playWebAudioFallback(type);
-    }
-  }
-
   async function playTimerComplete() {
     const sound = await Storage.getSetting('sound');
     await playSound(sound);
     vibrate([300, 100, 300, 100, 300]);
   }
 
-  function scheduleDailyReminder() {
-    if (!('serviceWorker' in navigator)) return;
+  async function testSound() {
+    const sound = document.getElementById('setting-sound')?.value
+      || (await Storage.getSetting('sound'))
+      || 'bell';
+    await unlockAudio();
+    await playSound(sound);
+    App.showToast(`Playing "${sound}" sound`, 'info');
+  }
 
+  function scheduleDailyReminder() {
     const now = new Date();
     const reminder = new Date();
     reminder.setHours(20, 0, 0, 0);
@@ -194,7 +305,7 @@ const Notifications = (() => {
       const sessions = await Storage.getAll(Storage.STORES.sessions);
       const today = Storage.getDateKey(new Date());
       const todayMinutes = sessions
-        .filter(s => Storage.getDateKey(s.date) === today)
+        .filter((s) => Storage.getDateKey(s.date) === today)
         .reduce((sum, s) => sum + (s.duration || 0), 0);
 
       const dailyGoal = await Storage.getSetting('dailyGoal');
@@ -210,12 +321,20 @@ const Notifications = (() => {
   }
 
   async function init() {
+    setupAudioUnlock();
     await requestPermission();
     scheduleDailyReminder();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        unlockAudio();
+      }
+    });
   }
 
   return {
     init,
+    unlockAudio,
+    preloadSounds,
     requestPermission,
     isEnabled,
     show,
@@ -225,6 +344,7 @@ const Notifications = (() => {
     notifyDailyGoalReminder,
     playSound,
     playTimerComplete,
+    testSound,
     vibrate
   };
 })();

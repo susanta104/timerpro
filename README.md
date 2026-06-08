@@ -99,9 +99,9 @@ StudyCommandCenter/
     │   ├── icon-192.png
     │   └── icon-512.png
     └── sounds/
-        ├── bell.mp3
-        ├── soft.mp3
-        └── digital.mp3
+        ├── bell.wav
+        ├── soft.wav
+        └── digital.wav
 ```
 
 ## Keyboard Shortcuts

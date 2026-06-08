@@ -122,6 +122,12 @@ const Settings = (() => {
 
   function setupEvents() {
     document.getElementById('settings-save').addEventListener('click', savePreferences);
+    document.getElementById('settings-test-sound').addEventListener('click', () => {
+      Notifications.testSound();
+    });
+    document.getElementById('setting-sound').addEventListener('change', async () => {
+      await Notifications.unlockAudio();
+    });
     document.getElementById('settings-export-all').addEventListener('click', exportAll);
     document.getElementById('settings-import-file').addEventListener('change', (e) => {
       const file = e.target.files[0];
