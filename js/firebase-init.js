@@ -23,12 +23,12 @@ import {
 // PASTE YOUR FIREBASE CONFIG HERE (from Firebase Console)
 // ============================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyAFp8M3GpEIb2mnIxrjpR5EBhchjIlU3Vw",
-  authDomain: "study-command-center-38161.firebaseapp.com",
-  projectId: "study-command-center-38161",
-  storageBucket: "study-command-center-38161.firebasestorage.app",
-  messagingSenderId: "466525188921",
-  appId: "1:466525188921:web:a7bfb8a780d0535920aee8"
+  apiKey: "PASTE_ME",
+  authDomain: "PASTE_ME",
+  projectId: "PASTE_ME",
+  storageBucket: "PASTE_ME",
+  messagingSenderId: "PASTE_ME",
+  appId: "PASTE_ME"
 };
 // ============================================================
 
