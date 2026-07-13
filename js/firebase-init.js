@@ -23,120 +23,12 @@ import {
 // PASTE YOUR FIREBASE CONFIG HERE (from Firebase Console)
 // ============================================================
 const firebaseConfig = {
-  apiKey: "<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyAFp8M3GpEIb2mnIxrjpR5EBhchjIlU3Vw",
-    authDomain: "study-command-center-38161.firebaseapp.com",
-    projectId: "study-command-center-38161",
-    storageBucket: "study-command-center-38161.firebasestorage.app",
-    messagingSenderId: "466525188921",
-    appId: "1:466525188921:web:a7bfb8a780d0535920aee8"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>",
-  authDomain: "<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyAFp8M3GpEIb2mnIxrjpR5EBhchjIlU3Vw",
-    authDomain: "study-command-center-38161.firebaseapp.com",
-    projectId: "study-command-center-38161",
-    storageBucket: "study-command-center-38161.firebasestorage.app",
-    messagingSenderId: "466525188921",
-    appId: "1:466525188921:web:a7bfb8a780d0535920aee8"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>",
-  projectId: "<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyAFp8M3GpEIb2mnIxrjpR5EBhchjIlU3Vw",
-    authDomain: "study-command-center-38161.firebaseapp.com",
-    projectId: "study-command-center-38161",
-    storageBucket: "study-command-center-38161.firebasestorage.app",
-    messagingSenderId: "466525188921",
-    appId: "1:466525188921:web:a7bfb8a780d0535920aee8"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>",
-  storageBucket: "<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyAFp8M3GpEIb2mnIxrjpR5EBhchjIlU3Vw",
-    authDomain: "study-command-center-38161.firebaseapp.com",
-    projectId: "study-command-center-38161",
-    storageBucket: "study-command-center-38161.firebasestorage.app",
-    messagingSenderId: "466525188921",
-    appId: "1:466525188921:web:a7bfb8a780d0535920aee8"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>",
-  messagingSenderId: "<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyAFp8M3GpEIb2mnIxrjpR5EBhchjIlU3Vw",
-    authDomain: "study-command-center-38161.firebaseapp.com",
-    projectId: "study-command-center-38161",
-    storageBucket: "study-command-center-38161.firebasestorage.app",
-    messagingSenderId: "466525188921",
-    appId: "1:466525188921:web:a7bfb8a780d0535920aee8"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>",
-  appId: "<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyAFp8M3GpEIb2mnIxrjpR5EBhchjIlU3Vw",
-    authDomain: "study-command-center-38161.firebaseapp.com",
-    projectId: "study-command-center-38161",
-    storageBucket: "study-command-center-38161.firebasestorage.app",
-    messagingSenderId: "466525188921",
-    appId: "1:466525188921:web:a7bfb8a780d0535920aee8"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>"
+  apiKey: "PASTE_ME",
+  authDomain: "PASTE_ME",
+  projectId: "PASTE_ME",
+  storageBucket: "PASTE_ME",
+  messagingSenderId: "PASTE_ME",
+  appId: "PASTE_ME"
 };
 // ============================================================
 
