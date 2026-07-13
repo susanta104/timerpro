@@ -259,6 +259,14 @@ const App = (() => {
     setupKeyboardNav();
     registerServiceWorker();
 
+    // Sync is loaded as an ES module (js/sync.js) and may not have attached
+    // window.Sync yet on a very slow connection; wait briefly, then proceed
+    // without it if it never shows up (app must work with zero backend).
+    for (let i = 0; i < 20 && !window.Sync; i++) {
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    if (window.Sync) Sync.init();
+
     const hash = location.hash.replace('#', '');
     if (hash && VIEW_TITLES[hash]) {
       navigateTo(hash);

@@ -2,7 +2,7 @@
  * Study Command Center - Service Worker
  * Offline-first caching for GitHub Pages deployment
  */
-const CACHE_NAME = 'study-command-center-v3';
+const CACHE_NAME = 'study-command-center-v4';
 const OFFLINE_URL = './index.html';
 
 const PRECACHE_ASSETS = [
@@ -61,6 +61,18 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
+
+  // Firebase Auth/Firestore/SDK traffic must always go straight to the
+  // network — never cached, never intercepted by this service worker.
+  const FIREBASE_HOSTS = [
+    'gstatic.com',
+    'googleapis.com',
+    'firebaseapp.com',
+    'firebaseio.com'
+  ];
+  if (FIREBASE_HOSTS.some((host) => url.hostname.endsWith(host))) {
+    return;
+  }
 
   if (url.origin !== self.location.origin && !url.href.includes('cdn.jsdelivr.net')) {
     return;

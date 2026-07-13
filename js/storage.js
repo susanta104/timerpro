@@ -3,6 +3,11 @@
  * IndexedDB with LocalStorage fallback
  */
 const Storage = (() => {
+  // Fired whenever local data changes, so Sync (if loaded) knows to push.
+  // No-op if nothing is listening — this file has zero hard dependency on sync.js.
+  function notifyChanged() {
+    document.dispatchEvent(new CustomEvent('scc:datachange'));
+  }
   const DB_NAME = 'StudyCommandCenterDB';
   const DB_VERSION = 1;
   const LS_PREFIX = 'scc_';
@@ -472,6 +477,16 @@ const Storage = (() => {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
   }
 
+  // Wraps a mutating function so a successful call fires scc:datachange.
+  // Sync (js/sync.js) listens for this; if that file isn't loaded, this is a harmless no-op.
+  function notifying(fn) {
+    return async (...args) => {
+      const result = await fn(...args);
+      notifyChanged();
+      return result;
+    };
+  }
+
   return {
     STORES,
     DEFAULT_SETTINGS,
@@ -479,21 +494,21 @@ const Storage = (() => {
     init,
     getAll,
     getById,
-    add,
-    addSession,
-    put,
-    remove,
-    clearStore,
+    add: notifying(add),
+    addSession: notifying(addSession),
+    put: notifying(put),
+    remove: notifying(remove),
+    clearStore: notifying(clearStore),
     getSetting,
-    setSetting,
+    setSetting: notifying(setSetting),
     getAllSettings,
     getSubjectTarget,
-    setSubjectTarget,
+    setSubjectTarget: notifying(setSubjectTarget),
     getTimerState,
-    setTimerState,
-    clearTimerState,
+    setTimerState: notifying(setTimerState),
+    clearTimerState: notifying(clearTimerState),
     exportAll,
-    importAll,
+    importAll, // deliberately NOT wrapped — see js/sync.js, which calls importAll directly during a pull and must not re-trigger a push
     formatDuration,
     formatHours,
     getDateKey,

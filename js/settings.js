@@ -9,6 +9,38 @@ const Settings = (() => {
     document.getElementById('setting-notifications').value = settings.notifications;
     document.getElementById('setting-daily-goal').value = settings.dailyGoal;
     document.getElementById('setting-weekly-goal').value = settings.weeklyGoal;
+    renderSyncStatus();
+  }
+
+  function renderSyncStatus(detail) {
+    const status = detail || (window.Sync ? Sync.getStatus() : { signedIn: false });
+    const text = document.getElementById('sync-status-text');
+    const signInBtn = document.getElementById('sync-signin-btn');
+    const signOutBtn = document.getElementById('sync-signout-btn');
+    const syncNowBtn = document.getElementById('sync-now-btn');
+
+    if (!window.Sync) {
+      text.textContent = 'Cloud sync is not set up yet.';
+      signInBtn.classList.add('hidden');
+      signOutBtn.classList.add('hidden');
+      syncNowBtn.classList.add('hidden');
+      return;
+    }
+
+    if (status.signedIn) {
+      const when = status.lastSyncedAt
+        ? new Date(status.lastSyncedAt).toLocaleString()
+        : 'not yet';
+      text.textContent = `Signed in as ${status.email}. Last synced: ${when}.${status.error ? ' ' + status.error : ''}`;
+      signInBtn.classList.add('hidden');
+      signOutBtn.classList.remove('hidden');
+      syncNowBtn.classList.remove('hidden');
+    } else {
+      text.textContent = 'Not signed in. Your data stays only on this device.';
+      signInBtn.classList.remove('hidden');
+      signOutBtn.classList.add('hidden');
+      syncNowBtn.classList.add('hidden');
+    }
   }
 
   async function savePreferences() {
@@ -61,6 +93,7 @@ const Settings = (() => {
       const data = JSON.parse(text);
       await Storage.importAll(data);
       App.showToast('Data imported successfully', 'success');
+      if (window.Sync && Sync.getStatus().signedIn) Sync.pushNow();
       render();
       Dashboard.render();
     } catch (e) {
@@ -140,6 +173,21 @@ const Settings = (() => {
     document.querySelectorAll('[data-danger]').forEach(btn => {
       btn.addEventListener('click', () => handleDangerAction(btn.dataset.danger));
     });
+
+    document.getElementById('sync-signin-btn').addEventListener('click', () => {
+      if (window.Sync) Sync.signIn();
+    });
+    document.getElementById('sync-signout-btn').addEventListener('click', () => {
+      if (window.Sync) Sync.signOut();
+    });
+    document.getElementById('sync-now-btn').addEventListener('click', () => {
+      if (window.Sync) {
+        Sync.pushNow();
+        App.showToast('Sync started', 'info');
+      }
+    });
+
+    document.addEventListener('scc:syncstatus', (e) => renderSyncStatus(e.detail));
   }
 
   setupEvents();
